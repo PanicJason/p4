@@ -1,0 +1,99 @@
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Police_Assist</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- title -->
+    <h1>Police_Assist</h1>
+
+    <!-- image_loader -->
+    <input type="file" id="attach_img" name="file">
+    <div id="main-container">
+        <div id="image-section">
+            <div id="image_container">
+                <img id="selected_image" src="" alt="Selected Image">
+            </div>
+        </div>
+        <div id="result-section">
+            <input type="button" value="결과 확인">
+            <div id="image_result">
+                <!-- image_result -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Event -->
+    <script>
+        const inputElement = document.getElementById("attach_img");
+        const imageElement = document.getElementById("selected_image");
+        const resultDiv = document.getElementById("image_result");
+
+        inputElement.addEventListener("change", function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imageElement.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelector('input[type="button"]').addEventListener('click', function() {
+                const file1 = inputElement.files[0];
+                let fileNameWithoutExtension = file1 ? file1.name.replace(/\.[^/.]+$/, "") : "";
+
+                // db_connection.py의 결과값을 flask에서 필터링하여 가져옴
+                fetch('/get_filtered_result', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `file_name=${fileNameWithoutExtension}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    let output = '';
+                    Array.from(data).forEach(row => {
+                        output += `이름: ${row.name}<br>
+                                    성별: ${row.gender}<br>
+                                    나이: ${row.age}<br>
+                                    주소: ${row.address}<br>
+                                    전화번호: ${row.tel}<br>
+                                    실종유무: ${row.type}<br>
+                                    `;
+                    });
+                    resultDiv.innerHTML = output;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+                
+                // 얼굴 인식을 수행합니다.
+                const file2 = inputElement.files[0];
+                if (file2) {
+                    const formData = new FormData();
+                    formData.append('image', file2);
+        
+                    fetch('/upload_image', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        imageElement.src = data.image;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+body {
+    background-color: #D9E5FF;
+}
+
+h1 {
+    text-align: center;
+}
+
+#main-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+#image-section, #result-section {
+    width: 48%;
+}
+
+#image_container img {
+    max-width: 100%;
+    height: auto;
+}
+
+input[type="button"] {
+    margin-top: 20px;
+    background-color: blue;
+    color: white;
+    padding: 14px 20px;
+    border: none;
+    cursor: pointer;
+}
